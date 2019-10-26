@@ -161,7 +161,7 @@ func (bd *BuseDevice) Connect() error {
 	return nil
 }
 
-func CreateDevice(device string, size uint, buseDriver BuseInterface) (*BuseDevice, error) {
+func CreateDevice(device string, size, pageSize uint, buseDriver BuseInterface) (*BuseDevice, error) {
 	buseDevice := &BuseDevice{size: size, device: device, driver: buseDriver}
 	sockPair, err := syscall.Socketpair(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
 	if err != nil {
@@ -175,6 +175,7 @@ func CreateDevice(device string, size uint, buseDriver BuseInterface) (*BuseDevi
 	ioctl(buseDevice.deviceFp.Fd(), NBD_SET_SIZE, uintptr(size))
 	ioctl(buseDevice.deviceFp.Fd(), NBD_CLEAR_QUE, 0)
 	ioctl(buseDevice.deviceFp.Fd(), NBD_CLEAR_SOCK, 0)
+	ioctl(buseDevice.deviceFp.Fd(), NBD_SET_SIZE_BLOCKS, uintptr(pageSize))
 	buseDevice.socketPair = sockPair
 	buseDevice.op[NBD_CMD_READ] = opDeviceRead
 	buseDevice.op[NBD_CMD_WRITE] = opDeviceWrite
